@@ -190,14 +190,14 @@ const POSITION_BOTTOM_RIGHT = {
     "top": 0.5261202368979774
 }
 
-const DELAY = (offset) => ({
+const DELAY = (offset=0, duration = 20) => ({
     offsetMs: offset,
-    durationMs: 20000 - offset
+    durationMs: duration * 1000 - offset,
 })
 
 const BOUNDRIES = {
     "aspectRatio": 1.7777777777777777,
-    "width": 0.32280701754385965,
+    "width": 0.322,
 };
 
 const TYPE_RECENT_UPLOAD = {

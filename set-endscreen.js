@@ -54,7 +54,7 @@ const initialize = async () => {
 initialize().then(async () => {
     // Assuming that endscreen duration is 14 sec
     const videoLengthSec = args.video_length
-    const TWENTY_SEC_BEFORE_END_MS = (videoLengthSec - 14) * 1000
+    const end_screen_start = (videoLengthSec - 14) * 1000
 
     // Twitch Seeker specific locations
     const POSITION_TOP_RIGHT = {
@@ -67,10 +67,10 @@ initialize().then(async () => {
         "top": 0.5202,
     }
     
-    return setEndScreen(args.video_id, TWENTY_SEC_BEFORE_END_MS, [
-        { ...endScreen.POSITION_BOTTOM_LEFT,  ...endScreen.TYPE_SUBSCRIBE(args.channel_id) }, // subscribe button
-        { ...POSITION_TOP_RIGHT,    ...endScreen.TYPE_RECENT_UPLOAD }, // recent upload
-        { ...POSITION_BOTTOM_RIGHT, ...endScreen.TYPE_BEST_FOR_VIEWERS }, // best for viewers
+    return setEndScreen(args.video_id, end_screen_start, [
+        { ...endScreen.POSITION_BOTTOM_LEFT,  ...endScreen.TYPE_SUBSCRIBE(args.channel_id), ...endScreen.DELAY(0, 14) }, // subscribe button
+        { ...POSITION_TOP_RIGHT,              ...endScreen.TYPE_RECENT_UPLOAD,              ...endScreen.DELAY(0, 14) }, // recent upload
+        { ...POSITION_BOTTOM_RIGHT,           ...endScreen.TYPE_BEST_FOR_VIEWERS,           ...endScreen.DELAY(0, 14) }, // best for viewers
     ])
 }).then((result) => {
     console.log(JSON.stringify(result, null, 4))
