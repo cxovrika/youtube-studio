@@ -51,13 +51,41 @@ const initialize = async () => {
 }
 
 initialize().then(async () => {
-    const result = await getVideo(args.video_id)
-    const video = result.videos[0]
-    return video
+    console.log(`Starting polling to make sure vide with id '${args.video_id}' exists on YouTube and is processed...`)
+
+    // Poll until video processing on YouTube side is done
+    for (let i = 0; i < 20; i++) {
+        console.log(`Trying to get information about video, attempt ${i+1}`)
+        try {
+            const result = await getVideo(args.video_id)
+            const video = result.videos[0]
+
+            if (
+                video.responseStatus.statusCode != 'CREATOR_ENTITY_STATUS_FAILURE'
+                && video.status == 'VIDEO_STATUS_PROCESSED'
+            ) {
+                console.log("Got the video, YouTube processing is done!")
+                return video
+            } else {
+                console.log(
+                    `Attempt ${i+1} failed, video does not exist or is not yet processed`
+                )
+            }
+        } catch (err) {
+            console.log(`Attempt ${i+1} failed with error: ${err}`)
+        }
+        console.log('sleeping for 1 minute, then trying again...')
+        await new Promise(r => setTimeout(r, 1000 * 60))
+    }
+
+    console.log("After 20 minutes of polling, could not get the video. Returning non-zero status-code!")
+    process.exit(-1)
 }).then(async (video) => {
     // Assuming that endscreen duration is 14 sec
     const videoLengthSec = parseInt(video.lengthSeconds)
     const end_screen_start = (videoLengthSec - 14) * 1000
+
+    console.log(`Video length is: ${videoLengthSec}, endscreen will start at ${end_screen_start}ms`)
 
     // Twitch Seeker specific locations
     const POSITION_TOP_RIGHT = {
@@ -76,7 +104,7 @@ initialize().then(async () => {
         { ...POSITION_BOTTOM_RIGHT,           ...endScreen.TYPE_BEST_FOR_VIEWERS,           ...endScreen.DELAY(0, 14) }, // best for viewers
     ])
 }).then((result) => {
-    console.log(JSON.stringify(result, null, 4))
+    console.log("Response on endscreen setter request:\n", JSON.stringify(result, null, 4))
 }).catch((err) => {
     console.log(err)
     process.exit(-1)
